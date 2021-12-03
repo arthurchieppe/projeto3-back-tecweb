@@ -10,24 +10,26 @@ def index(request):
     return HttpResponse("Olá mundo! Este é o app todo de Tecnologias Web do Insper.")
 
 
-@api_view(['GET', 'POST', 'DELETE'])
-def api_todo(request):
+@api_view(['GET', 'POST'])
+def api_all_tasks(request):
     if request.method == 'POST':
-        print("POST")
-        # new_user_data = request.data
-        # try:
-        #     user = User.objects.get(username=username)
-        #     user.cities = new_user_data['cities']
-        #     print("try")
-        # except:
-        #     user = User(username=username)
-        #     print("except")
-        # user.save()
-    else:
-        try:
-            all_tasks = Todo.objects.all()
-        except Todo.DoesNotExist:
-            raise Http404()
+        new_task_data = request.data
+        print(new_task_data)
+        task = Todo(description=new_task_data["description"], dueDate=new_task_data["dueDate"])
+        task.save()
+    try:
+        all_tasks = Todo.objects.all()
+    except Todo.DoesNotExist:
+        raise Http404()
     
-    serialized_note = TodoSerializer(all_tasks, many=True)
-    return Response(serialized_note.data)
+    serialized_todo= TodoSerializer(all_tasks, many=True)
+    return Response(serialized_todo.data)
+
+
+@api_view(['DELETE'])
+def api_delete_task(request, task_id):
+    try:
+        task = Todo.objects.get(id=int(task_id))
+        task.delete()
+    except Todo.DoesNotExist:
+        raise Http404()
